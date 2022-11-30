@@ -1,0 +1,12 @@
+name: Release
+
+on:
+  workflow_dispatch: {}
+
+jobs:
+  Release:
+    name: Release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
