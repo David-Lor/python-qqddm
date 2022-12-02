@@ -63,7 +63,14 @@ class AnimeConverter(BaseAnimeConverter):
         r.raise_for_status()
 
         response = qqddm_api.AIProcessorResponseBody.parse_raw(r.content)
+
         if not response.valid:
+            if response.msg == "IMG_ILLEGAL":
+                raise qqddm_api_exceptions.IllegalPictureQQDDMApiResponseException(
+                    response_body=r.text,
+                    response_body_parsed=response,
+                )
+
             raise qqddm_api_exceptions.InvalidQQDDMApiResponseException(
                 response_body=r.text,
                 response_body_parsed=response,

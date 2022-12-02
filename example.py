@@ -2,6 +2,7 @@ import datetime
 import sys
 
 import qqddm.main
+import qqddm.models.exceptions.qqddm_api
 
 
 if __name__ == '__main__':
@@ -17,7 +18,18 @@ if __name__ == '__main__':
     converter = qqddm.main.AnimeConverter()
 
     # Result is returned as an `AnimeResult` object
-    result = converter.convert(picture_bytes)
+    try:
+        result = converter.convert(picture_bytes)
+    except qqddm.models.exceptions.qqddm_api.IllegalPictureQQDDMApiResponseException:
+        # The API may forbid converting images with sensible content
+        print("The image provided is forbidden, try with another picture")
+        exit(1)
+    except qqddm.models.exceptions.qqddm_api.InvalidQQDDMApiResponseException as ex:
+        # If the API returned any other error, show the response body
+        print(f"API returned error; response body: {ex.response_body}")
+        exit(1)
+
+    # noinspection PyUnboundLocalVariable
     print("Result:", result)
     print("Result URLs:", [str(url) for url in result.pictures_urls])
 

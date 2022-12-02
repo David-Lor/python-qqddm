@@ -15,10 +15,15 @@ class BaseQQDDMApiException(BaseQQDDMException):
 
 
 class InvalidQQDDMApiResponseException(BaseQQDDMApiException):
+    error_msg = "Invalid response body"
+
     def __init__(self, response_body, response_body_parsed):
-        # TODO Exception failing on launch due to super args/kwargs
         super().__init__(
-            msg="Invalid response body",
+            msg=self.error_msg,
             response_body=response_body,
             response_body_parsed=response_body_parsed,
         )
+
+
+class IllegalPictureQQDDMApiResponseException(InvalidQQDDMApiResponseException):
+    error_msg = "Illegal picture"
