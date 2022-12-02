@@ -62,7 +62,6 @@ class AnimeConverter(BaseAnimeConverter):
         )
         r.raise_for_status()
 
-        print(r.text)
         response = qqddm_api.AIProcessorResponseBody.parse_raw(r.content)
         if not response.valid:
             raise qqddm_api_exceptions.InvalidQQDDMApiResponseException(
