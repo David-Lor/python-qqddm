@@ -58,10 +58,10 @@ The result depends on the `extra.version` used on the request.
 
 ##### `img_urls` results
 
-1. Vertical with original on bottom-right (png despite the file extension)
-2. Two-side vertical comparison (jpg)
-3. Vertical resulting picture only (jpg)
-4. Like 1 but (jpg)
+1. Vertical with original on bottom-right (png despite the file extension, 720x1280, [Pic example](group1-pic1.png))
+2. Two-side vertical comparison (jpg, 1000x930, [Pic example](group1-pic2.jpg))
+3. Vertical resulting picture only (jpg, 830x1400, [Pic example](group1-pic3.jpg))
+4. Like 1 but (jpg, 720x1462, [Pic example](group1-pic4.jpg))
 
 #### b.1.ii. For `extra.version = 2`
 
@@ -76,6 +76,8 @@ The result depends on the `extra.version` used on the request.
     "uuid": "d8e01394-7283-11ed-9ab0-525400e59797"
 }
 ```
+
+[Pic example](group2-pic1.jpg)
 
 ## b.2. Errors
 
