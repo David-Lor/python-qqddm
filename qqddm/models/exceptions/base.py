@@ -1,0 +1,2 @@
+class BaseQQDDMException(Exception):
+    pass
