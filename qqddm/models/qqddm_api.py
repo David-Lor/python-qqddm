@@ -6,11 +6,12 @@ import pydantic
 class AIProcessorRequestBody(pydantic.BaseModel):
 
     class Extra(pydantic.BaseModel):
-        pass
+        version: Optional[int] = None
+        platform: str = "web"
 
     busiId: str = "ai_painting_anime_entry"
     images: List[str]
-    # extra: str
+    extra: Optional[str] = None
 
 
 class AIProcessorResponseBody(pydantic.BaseModel):

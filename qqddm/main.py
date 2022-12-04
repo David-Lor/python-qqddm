@@ -21,6 +21,7 @@ class BaseAnimeConverter(pydantic.BaseModel):
     generate_request_url: str = "https://ai.tu.qq.com/trpc.shadow_cv.ai_processor_cgi.AIProcessorCgi/Process"
     generate_request_timeout_seconds: float = 30
     generate_proxy: Optional[str] = None
+    generate_api_version: Optional[int] = None
 
     # Settings for Download requests (download generated pictures)
     download_request_timeout_seconds: float = 20
@@ -29,14 +30,17 @@ class BaseAnimeConverter(pydantic.BaseModel):
     class Config:
         validate_assignment = True
 
-    @staticmethod
-    def _get_request_body(picture: bytes):
+    def _get_request_body(self, picture: bytes):
         picture_b64 = base64.b64encode(picture).decode()
+        extra = qqddm_api.AIProcessorRequestBody.Extra(
+            # version=1,  # horizontal
+            # version=2,  # vertical
+            version=self.generate_api_version,
+        )
+
         return qqddm_api.AIProcessorRequestBody(
             images=[picture_b64],
-            # extra=qqddm_api.AIProcessorRequestBody.Extra(
-            #
-            # ).json(),
+            extra=extra.json(exclude_none=True),
         )
 
 
@@ -58,11 +62,12 @@ class AnimeConverter(BaseAnimeConverter):
             proxy=choose(self.global_proxy, self.generate_proxy),
             method="POST",
             url=self.generate_request_url,
-            json=request_body.dict(),
+            json=request_body.dict(exclude_none=True),
         )
         r.raise_for_status()
 
-        response = qqddm_api.AIProcessorResponseBody.parse_raw(r.content)
+        response_body = r.json()
+        response = qqddm_api.AIProcessorResponseBody.parse_obj(response_body)
 
         if not response.valid:
             if response.msg == "IMG_ILLEGAL":
@@ -78,6 +83,7 @@ class AnimeConverter(BaseAnimeConverter):
 
         return AnimeResult(
             pictures_urls=response.extra_parsed.img_urls,
+            raw_response_body=response_body,
         )
 
     def download(
@@ -144,3 +150,4 @@ class AnimeConverter(BaseAnimeConverter):
 class AnimeResult(pydantic.BaseModel):
 
     pictures_urls: List[pydantic.AnyHttpUrl]
+    raw_response_body: dict
