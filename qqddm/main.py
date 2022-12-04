@@ -1,4 +1,5 @@
 import base64
+import random
 import threading
 from typing import Optional, List
 
@@ -10,22 +11,28 @@ from .models import qqddm_api
 from .models.exceptions import qqddm_api as qqddm_api_exceptions
 
 
+DEFAULT_USERAGENT = "Mozilla/5.0 (X11; Linux x86_64; rv:106.0) Gecko/20100101 Firefox/106.0"
+
+
 class BaseAnimeConverter(pydantic.BaseModel):
     # TODO Document configuration attributes on docstring
 
     # Request settings that will override all the per-request settings
     global_request_timeout_seconds: Optional[float] = None
     global_proxy: Optional[str] = None
+    global_useragents: Optional[List[str]] = None
 
     # Settings for Generate requests (send a picture and convert to an anime avatar)
     generate_request_url: str = "https://ai.tu.qq.com/trpc.shadow_cv.ai_processor_cgi.AIProcessorCgi/Process"
     generate_request_timeout_seconds: float = 30
     generate_proxy: Optional[str] = None
     generate_api_version: Optional[int] = None
+    generate_useragents: Optional[List[str]] = [DEFAULT_USERAGENT]
 
     # Settings for Download requests (download generated pictures)
     download_request_timeout_seconds: float = 20
     download_proxy: Optional[str] = None
+    download_useragents: Optional[List[str]] = [DEFAULT_USERAGENT]
 
     class Config:
         validate_assignment = True
@@ -33,8 +40,6 @@ class BaseAnimeConverter(pydantic.BaseModel):
     def _get_request_body(self, picture: bytes):
         picture_b64 = base64.b64encode(picture).decode()
         extra = qqddm_api.AIProcessorRequestBody.Extra(
-            # version=1,  # horizontal
-            # version=2,  # vertical
             version=self.generate_api_version,
         )
 
@@ -42,6 +47,13 @@ class BaseAnimeConverter(pydantic.BaseModel):
             images=[picture_b64],
             extra=extra.json(exclude_none=True),
         )
+
+    @staticmethod
+    def _get_useragent_headers(agents: Optional[List[str]]) -> dict:
+        headers = dict()
+        if agents:
+            headers["User-Agent"] = random.choice(agents)
+        return headers
 
 
 class AnimeConverter(BaseAnimeConverter):
@@ -60,6 +72,7 @@ class AnimeConverter(BaseAnimeConverter):
         r = self._request(
             request_timeout_seconds=choose(self.global_request_timeout_seconds, self.generate_request_timeout_seconds),
             proxy=choose(self.global_proxy, self.generate_proxy),
+            headers=self._get_useragent_headers(choose(self.global_useragents, self.generate_useragents)),
             method="POST",
             url=self.generate_request_url,
             json=request_body.dict(exclude_none=True),
@@ -122,6 +135,7 @@ class AnimeConverter(BaseAnimeConverter):
         r = self._request(
             request_timeout_seconds=choose(self.global_request_timeout_seconds, self.download_request_timeout_seconds),
             proxy=choose(self.global_proxy, self.download_proxy),
+            headers=self._get_useragent_headers(choose(self.global_useragents, self.download_useragents)),
             method="GET",
             url=download_url,
         )
