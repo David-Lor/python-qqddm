@@ -1,4 +1,5 @@
 import base64
+import time
 import random
 import threading
 from typing import Optional, List
@@ -69,6 +70,7 @@ class AnimeConverter(BaseAnimeConverter):
         """
 
         request_body = self._get_request_body(picture=picture)
+        time_start = time.time()
         r = self._request(
             request_timeout_seconds=choose(self.global_request_timeout_seconds, self.generate_request_timeout_seconds),
             proxy=choose(self.global_proxy, self.generate_proxy),
@@ -97,6 +99,7 @@ class AnimeConverter(BaseAnimeConverter):
         return AnimeResult(
             pictures_urls=response.extra_parsed.img_urls,
             raw_response_body=response_body,
+            generation_span_seconds=time.time() - time_start,
         )
 
     def download(
@@ -165,3 +168,4 @@ class AnimeResult(pydantic.BaseModel):
 
     pictures_urls: List[pydantic.AnyHttpUrl]
     raw_response_body: dict
+    generation_span_seconds: float
