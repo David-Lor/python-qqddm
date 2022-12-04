@@ -101,18 +101,18 @@ jobs:
         with:
           python-version: "3.9"
 
-      - name: Install pnytter requirements from main PyPI repository
+      - name: Install qqddm requirements from GitHub repository
         run: pip install -r requirements.txt
 
       # TODO allow testing from production index
-      - name: Install pnytter package
+      - name: Install qqddm package
         uses: nick-fields/retry@v2
         with:
           timeout_seconds: 30
           max_attempts: 12
           retry_wait_seconds: 5
           retry_on: error
-          command: pip install --index-url="https://test.pypi.org/simple/" "pnytter==${{ github.event.inputs.version }}"
+          command: pip install --index-url="https://test.pypi.org/simple/" "qqddm==${{ github.event.inputs.version }}"
       - name: Test
         shell: python
         run: |-
