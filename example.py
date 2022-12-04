@@ -1,8 +1,15 @@
 import datetime
 import sys
+import os
+
+import httpx
 
 import qqddm.main
 import qqddm.models.exceptions.qqddm_api
+
+
+API_VERSION = os.getenv("API_VERSION", None)
+USERAGENT = os.getenv("USERAGENT", "Mozilla/5.0 (X11; Linux x86_64; rv:106.0) Gecko/20100101 Firefox/106.0")
 
 
 if __name__ == '__main__':
@@ -11,11 +18,22 @@ if __name__ == '__main__':
     #    python example.py /path/to/a/picture.jpg
 
     picture_filename = sys.argv[-1]
-    with open(picture_filename, "rb") as f:
-        picture_bytes = f.read()
+    if picture_filename.startswith("http"):
+        r = httpx.get(
+            url=picture_filename,
+            headers={"User-Agent": USERAGENT}
+        )
+        r.raise_for_status()
+        picture_bytes = r.content
+    else:
+        with open(picture_filename, "rb") as f:
+            picture_bytes = f.read()
 
     # Initialize the AnimeConverter class. Optional settings can be used for customizing the requesting behaviour.
-    converter = qqddm.main.AnimeConverter()
+    converter = qqddm.main.AnimeConverter(
+        generate_api_version=API_VERSION,
+        global_useragents=[USERAGENT],
+    )
 
     # Result is returned as an `AnimeResult` object
     try:
