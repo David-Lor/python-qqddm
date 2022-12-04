@@ -11,6 +11,8 @@ from .utils import choose
 from .models import qqddm_api
 from .models.exceptions import qqddm_api as qqddm_api_exceptions
 
+__all__ = ["AnimeConverter", "AnimeResult"]
+
 
 DEFAULT_USERAGENT = "Mozilla/5.0 (X11; Linux x86_64; rv:106.0) Gecko/20100101 Firefox/106.0"
 

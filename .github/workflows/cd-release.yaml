@@ -116,5 +116,5 @@ jobs:
       - name: Test
         shell: python
         run: |-
-          from qqddm.main import AnimeConverter
+          from qqddm import AnimeConverter
           print(AnimeConverter())
