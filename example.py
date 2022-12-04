@@ -3,9 +3,7 @@ import sys
 import os
 
 import httpx
-
-import qqddm.main
-import qqddm.models.exceptions.qqddm_api
+from qqddm import AnimeConverter, InvalidQQDDMApiResponseException, IllegalPictureQQDDMApiResponseException
 
 
 API_VERSION = os.getenv("API_VERSION", None)
@@ -30,7 +28,7 @@ if __name__ == '__main__':
             picture_bytes = f.read()
 
     # Initialize the AnimeConverter class. Optional settings can be used for customizing the requesting behaviour.
-    converter = qqddm.main.AnimeConverter(
+    converter = AnimeConverter(
         generate_api_version=API_VERSION,
         global_useragents=[USERAGENT],
     )
@@ -38,11 +36,11 @@ if __name__ == '__main__':
     # Result is returned as an `AnimeResult` object
     try:
         result = converter.convert(picture_bytes)
-    except qqddm.models.exceptions.qqddm_api.IllegalPictureQQDDMApiResponseException:
+    except IllegalPictureQQDDMApiResponseException:
         # The API may forbid converting images with sensible content
         print("The image provided is forbidden, try with another picture")
         exit(1)
-    except qqddm.models.exceptions.qqddm_api.InvalidQQDDMApiResponseException as ex:
+    except InvalidQQDDMApiResponseException as ex:
         # If the API returned any other error, show the response body
         print(f"API returned error; response body: {ex.response_body}")
         exit(1)

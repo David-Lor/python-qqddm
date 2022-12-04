@@ -3,6 +3,8 @@ from typing import Optional
 from .base import BaseQQDDMException
 from ..qqddm_api import AIProcessorResponseBody
 
+__all__ = ["BaseQQDDMApiException", "InvalidQQDDMApiResponseException", "IllegalPictureQQDDMApiResponseException"]
+
 
 class BaseQQDDMApiException(BaseQQDDMException):
     response_body: str

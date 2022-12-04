@@ -11,6 +11,8 @@ from .utils import choose
 from .models import qqddm_api
 from .models.exceptions import qqddm_api as qqddm_api_exceptions
 
+__all__ = ["AnimeConverter", "AnimeResult"]
+
 
 DEFAULT_USERAGENT = "Mozilla/5.0 (X11; Linux x86_64; rv:106.0) Gecko/20100101 Firefox/106.0"
 
@@ -24,13 +26,14 @@ class BaseAnimeConverter(pydantic.BaseModel):
     global_useragents: Optional[List[str]] = None
 
     # Settings for Generate requests (send a picture and convert to an anime avatar)
-    generate_request_url: str = "https://ai.tu.qq.com/trpc.shadow_cv.ai_processor_cgi.AIProcessorCgi/Process"
+    generate_request_url: pydantic.AnyHttpUrl = \
+        "https://ai.tu.qq.com/trpc.shadow_cv.ai_processor_cgi.AIProcessorCgi/Process"
     generate_request_timeout_seconds: float = 30
     generate_proxy: Optional[str] = None
     generate_api_version: Optional[int] = None
     generate_useragents: Optional[List[str]] = [DEFAULT_USERAGENT]
 
-    # Settings for Download requests (download generated pictures)
+    # Settings for Download requests (download generated pictures) (for each request)
     download_request_timeout_seconds: float = 20
     download_proxy: Optional[str] = None
     download_useragents: Optional[List[str]] = [DEFAULT_USERAGENT]
@@ -76,7 +79,7 @@ class AnimeConverter(BaseAnimeConverter):
             proxy=choose(self.global_proxy, self.generate_proxy),
             headers=self._get_useragent_headers(choose(self.global_useragents, self.generate_useragents)),
             method="POST",
-            url=self.generate_request_url,
+            url=str(self.generate_request_url),
             json=request_body.dict(exclude_none=True),
         )
         r.raise_for_status()
