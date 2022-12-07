@@ -14,15 +14,31 @@
 
 ### a.1. `extra` field (JSON string)
 
-`extra` is not required, but changing the `extra.version` may produce different image results.
+- Since 2022-12-06, `extra` is required.
+- Changing the `extra.version` may produce different results on the returned image formats.
+- The whole `data_report` node seems to be optional.
+- `data_report.parent_trace_id` can be a randomly-generated UUIDv4.
 
-### a.2. curl command
+## b. Request headers
 
-```bash
-curl 'https://ai.tu.qq.com/trpc.shadow_cv.ai_processor_cgi.AIProcessorCgi/Process' -X POST -H 'User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:106.0) Gecko/20100101 Firefox/106.0' -H 'Accept: application/json, text/plain, */*' -H 'Accept-Language: es,en-US;q=0.7,en;q=0.3' -H 'Accept-Encoding: gzip, deflate, br' -H 'Referer: https://h5.tu.qq.com/' -H 'Content-Type: application/json' -H 'Origin: https://h5.tu.qq.com' -H 'DNT: 1' -H 'Connection: keep-alive' -H 'Sec-Fetch-Dest: empty' -H 'Sec-Fetch-Mode: cors' -H 'Sec-Fetch-Site: same-site' --data-raw '{"busiId":"ai_painting_anime_entry","images":["<base64>"],"extra":"{\"face_rects\":[],\"version\":2,\"platform\":\"web\",\"data_report\":{\"parent_trace_id\":\"67abd766-8e57-4299-9464-f6e67b90be59\",\"root_channel\":\"\",\"level\":1}}"}'
+```json
+{
+  "x-sign-value": "<md5sum>",
+  "x-sign-version": "v1",
+  "Origin": "https://h5.tu.qq.com",
+  "Referer": "https://h5.tu.qq.com/",
+  "User-Agent": "<real user agent recommended>"
+}
 ```
 
-## b. Response body
+### b.1. x-sign
+
+Since 2022-12-06, it is required to include the `x-sign-value` and `x-sign-version`; otherwise the API will return `AUTH_FAILED`.
+
+The `x-sign-value` is the MD5 checksum hash from the following string: `'https://h5.tu.qq.com{A}HQ31X02e'`, where `{A}` is the length of the JSON body being sent.
+Check the code for more details (`BaseAnimeConverter._get_sign_headers()` method).
+
+## c. Response body
 
 ```json
 {
@@ -35,7 +51,7 @@ curl 'https://ai.tu.qq.com/trpc.shadow_cv.ai_processor_cgi.AIProcessorCgi/Proces
 }
 ```
 
-### b.1. `extra` field (JSON string)
+### c.1. `extra` field (JSON string)
 
 This field is a JSON string that contains the resulting images.
 
@@ -56,7 +72,7 @@ This field is a JSON string that contains the resulting images.
 
 The returned array of `img_urls` depends on whether the image is vertical or horizontal, and on the `extra.version` specified on the request body.
 
-#### b.1.i. `img_urls` results (vertical)
+#### c.1.i. `img_urls` results (vertical)
 
 This is returned when request `extra.version` is not specified or set to `1`; or when set to `2` and the given image is vertical.
 
@@ -65,7 +81,7 @@ This is returned when request `extra.version` is not specified or set to `1`; or
 3. Vertical resulting picture only (jpg, 830x1400, [Pic example](group1-pic3.jpg))
 4. Like 1 but (jpg, 720x1462, [Pic example](group1-pic4.jpg))
 
-#### b.1.ii. `img_urls` results (horizontal)
+#### c.1.ii. `img_urls` results (horizontal)
 
 This is returned when request `extra.version = 2` and the given image is horizontal.
 
@@ -74,7 +90,7 @@ This is returned when request `extra.version = 2` and the given image is horizon
 3. Horizontal resulting picture only (jpg, 1120x940, [Pic example](group2-pic3.jpg))
 4. Like 1 but (jpg, 720x1462, [Pic example](group2-pic4.jpg))
 
-#### b.1.iii. Other result
+#### c.1.iii. Other result
 
 The API may return the following result, but it's uncommon. Here, the same picture is always returned. Unknown conditions.
 
@@ -92,7 +108,7 @@ The API may return the following result, but it's uncommon. Here, the same pictu
 
 [Pic example](group3-pic1.jpg)
 
-## b.2. Errors
+## c.2. Errors
 
 Response always returns 200. When conversion fails, response only includes `code` and `msg`, where `code != 0`.
 
@@ -105,7 +121,7 @@ Example response body of a failed request:
 }
 ```
 
-### b.2.i. Identified errors
+### c.2.i. Identified errors
 
 | `code`  | `msg`                 | Description                                                                                         |
 |---------|-----------------------|-----------------------------------------------------------------------------------------------------|
