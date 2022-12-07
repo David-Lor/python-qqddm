@@ -6,7 +6,8 @@ import httpx
 from qqddm import AnimeConverter, InvalidQQDDMApiResponseException, IllegalPictureQQDDMApiResponseException
 
 
-API_VERSION = os.getenv("API_VERSION", None)
+API_VERSION = os.getenv("API_VERSION", 2)
+PROXY = os.getenv("PROXY", None)
 USERAGENT = os.getenv("USERAGENT", "Mozilla/5.0 (X11; Linux x86_64; rv:106.0) Gecko/20100101 Firefox/106.0")
 
 
@@ -31,6 +32,7 @@ if __name__ == '__main__':
     converter = AnimeConverter(
         generate_api_version=API_VERSION,
         global_useragents=[USERAGENT],
+        global_proxy=PROXY,
     )
 
     # Result is returned as an `AnimeResult` object

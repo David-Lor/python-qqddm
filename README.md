@@ -1,4 +1,4 @@
-# QQ's "Different Dimension Me" Animify Python library
+# QQ's "Different Dimension Me" Animefier Python library
 
 Python wrapper for QQ's "Different Dimension Me" AI, that applies an anime-theme to any given picture.
 
@@ -14,10 +14,15 @@ pip install --user qqddm
 
 Check the [example](example.py) code.
 
+Since 2022-12-06, it seems that the API requires requests being performed from China, thus using a chinese proxy is required (you can see some public free servers [here](http://free-proxy.cz/en/proxylist/country/CN/socks5/ping/all)).
+
 ## Changelog
 
 Versions 0.y.z are expected to be unstable, and the API may change on Minor (y) releases.
 
+- 0.0.2
+  - Add new `x-sign` headers required by the API since 2022-12-06.
+  - Add new custom exceptions based on errors returned by the API: `VolumnLimitQQDDMApiResponseException`, `AuthFailedQQDDMApiResponseException`, `NotAllowedCountryQQDDMApiResponseException`, `NoFaceInPictureQQDDMApiResponseException`.
 - 0.0.1
   - Initial release:
     - Class-based interface.

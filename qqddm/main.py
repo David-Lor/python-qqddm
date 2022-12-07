@@ -1,12 +1,14 @@
 import base64
 import time
 import random
+import hashlib
 import threading
 from typing import Optional, List
 
 import httpx
 import pydantic
 
+from .models.qqddm_api import AIProcessorRequestBody, AIProcessorResponseBody
 from .utils import choose
 from .models import qqddm_api
 from .models.exceptions import qqddm_api as qqddm_api_exceptions
@@ -59,6 +61,39 @@ class BaseAnimeConverter(pydantic.BaseModel):
             headers["User-Agent"] = random.choice(agents)
         return headers
 
+    @staticmethod
+    def _get_sign_headers(body: AIProcessorRequestBody) -> dict:
+        # Based on: https://github.com/lmcsu/qq-neural-anime-tg/blob/main/index.ts
+        #           (signV1(...) method)
+        body_str = body.json()
+        value = (
+            'https://h5.tu.qq.com' +
+            str(len(body_str)) +
+            'HQ31X02e'
+        )
+        value = hashlib.md5(value.encode()).hexdigest()
+
+        return {
+            "x-sign-value": value,
+            "x-sign-version": "v1",
+            "Origin": "https://h5.tu.qq.com",
+            "Referer": "https://h5.tu.qq.com/",
+        }
+
+    @staticmethod
+    def _raise_exception_from_response(response_raw: httpx.Response, response_parsed: AIProcessorResponseBody):
+        if response_parsed.valid:
+            return
+
+        exception = qqddm_api_exceptions.RESPONSE_CODES_EXCEPTIONS.get(
+            response_parsed.code,
+            qqddm_api_exceptions.InvalidQQDDMApiResponseException
+        )
+        raise exception(
+            response_body=response_raw.text,
+            response_body_parsed=response_parsed,
+        )
+
 
 class AnimeConverter(BaseAnimeConverter):
     """Synchronous AnimeConverter."""
@@ -73,11 +108,16 @@ class AnimeConverter(BaseAnimeConverter):
         """
 
         request_body = self._get_request_body(picture=picture)
+        headers = {
+            **self._get_sign_headers(request_body),
+            **self._get_useragent_headers(choose(self.global_useragents, self.generate_useragents)),
+        }
+
         time_start = time.time()
         r = self._request(
             request_timeout_seconds=choose(self.global_request_timeout_seconds, self.generate_request_timeout_seconds),
             proxy=choose(self.global_proxy, self.generate_proxy),
-            headers=self._get_useragent_headers(choose(self.global_useragents, self.generate_useragents)),
+            headers=headers,
             method="POST",
             url=str(self.generate_request_url),
             json=request_body.dict(exclude_none=True),
@@ -86,18 +126,10 @@ class AnimeConverter(BaseAnimeConverter):
 
         response_body = r.json()
         response = qqddm_api.AIProcessorResponseBody.parse_obj(response_body)
-
-        if not response.valid:
-            if response.msg == "IMG_ILLEGAL":
-                raise qqddm_api_exceptions.IllegalPictureQQDDMApiResponseException(
-                    response_body=r.text,
-                    response_body_parsed=response,
-                )
-
-            raise qqddm_api_exceptions.InvalidQQDDMApiResponseException(
-                response_body=r.text,
-                response_body_parsed=response,
-            )
+        self._raise_exception_from_response(
+            response_raw=r,
+            response_parsed=response,
+        )
 
         return AnimeResult(
             pictures_urls=response.extra_parsed.img_urls,
