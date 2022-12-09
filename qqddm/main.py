@@ -85,10 +85,7 @@ class BaseAnimeConverter(pydantic.BaseModel):
         if response_parsed.valid:
             return
 
-        exception = qqddm_api_exceptions.RESPONSE_CODES_EXCEPTIONS.get(
-            response_parsed.code,
-            qqddm_api_exceptions.InvalidQQDDMApiResponseException
-        )
+        exception = qqddm_api_exceptions.get_exception_from_response_code(response_parsed.code)
         raise exception(
             response_body=response_raw.text,
             response_body_parsed=response_parsed,
