@@ -24,6 +24,9 @@ Check the [example](example.py) code.
 
 Versions 0.y.z are expected to be unstable, and the API may change on Minor (y) releases.
 
+- 0.0.3
+  - Add new custom exception `ParamInvalidQQDDMApiResponseException`
+  - Refactor mapping of API response codes with custom exceptions, now done programatically, defining the corresponding response code on each exception class
 - 0.0.2
   - Add new `x-sign` headers required by the API since 2022-12-06.
   - Add new custom exceptions based on errors returned by the API: `VolumnLimitQQDDMApiResponseException`, `AuthFailedQQDDMApiResponseException`, `NotAllowedCountryQQDDMApiResponseException`, `NoFaceInPictureQQDDMApiResponseException`.
