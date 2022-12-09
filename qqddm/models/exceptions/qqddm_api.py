@@ -50,10 +50,15 @@ class NoFaceInPictureQQDDMApiResponseException(InvalidQQDDMApiResponseException)
     error_msg = "The picture does not have a valid face"
 
 
+class ParamInvalidQQDDMApiResponseException(InvalidQQDDMApiResponseException):
+    error_msg = "A request param is invalid or the given picture has an invalid format"
+
+
 RESPONSE_CODES_EXCEPTIONS = {
     2114: IllegalPictureQQDDMApiResponseException,
     2111: VolumnLimitQQDDMApiResponseException,
     -2111: AuthFailedQQDDMApiResponseException,
     2119: NotAllowedCountryQQDDMApiResponseException,
     1001: NoFaceInPictureQQDDMApiResponseException,
+    -2100: ParamInvalidQQDDMApiResponseException,
 }
