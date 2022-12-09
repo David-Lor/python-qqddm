@@ -1,11 +1,13 @@
-from typing import Optional
+import sys
+import inspect
+from typing import Optional, Type
 
 from .base import BaseQQDDMException
 from ..qqddm_api import AIProcessorResponseBody
 
 __all__ = [
     "BaseQQDDMApiException", "InvalidQQDDMApiResponseException", "IllegalPictureQQDDMApiResponseException",
-    "RESPONSE_CODES_EXCEPTIONS"
+    "get_exception_from_response_code",
 ]
 
 
@@ -20,7 +22,8 @@ class BaseQQDDMApiException(BaseQQDDMException):
 
 
 class InvalidQQDDMApiResponseException(BaseQQDDMApiException):
-    error_msg = "Invalid response body"
+    error_msg: str = "Invalid response body"
+    response_code: Optional[int] = None
 
     def __init__(self, response_body, response_body_parsed):
         super().__init__(
@@ -32,28 +35,36 @@ class InvalidQQDDMApiResponseException(BaseQQDDMApiException):
 
 class IllegalPictureQQDDMApiResponseException(InvalidQQDDMApiResponseException):
     error_msg = "Illegal picture"
+    response_code = 2114
 
 
 class VolumnLimitQQDDMApiResponseException(InvalidQQDDMApiResponseException):
     error_msg = "API rate limited or picture too big"
+    response_code = 2111
 
 
 class AuthFailedQQDDMApiResponseException(InvalidQQDDMApiResponseException):
     error_msg = "Auth failed (the API may have changed and the library is currently not compatible)"
+    response_code = -2111
 
 
 class NotAllowedCountryQQDDMApiResponseException(InvalidQQDDMApiResponseException):
     error_msg = "The current country is blocked by the API"
+    response_code = 2119
 
 
 class NoFaceInPictureQQDDMApiResponseException(InvalidQQDDMApiResponseException):
     error_msg = "The picture does not have a valid face"
+    response_code = 1001
 
 
-RESPONSE_CODES_EXCEPTIONS = {
-    2114: IllegalPictureQQDDMApiResponseException,
-    2111: VolumnLimitQQDDMApiResponseException,
-    -2111: AuthFailedQQDDMApiResponseException,
-    2119: NotAllowedCountryQQDDMApiResponseException,
-    1001: NoFaceInPictureQQDDMApiResponseException,
-}
+class ParamInvalidQQDDMApiResponseException(InvalidQQDDMApiResponseException):
+    error_msg = "A request param is invalid or the given picture has an invalid format"
+    response_code = -2100
+
+
+def get_exception_from_response_code(code: int) -> Type[InvalidQQDDMApiResponseException]:
+    for _, obj in inspect.getmembers(sys.modules[__name__]):
+        if isinstance(obj, type) and issubclass(obj, InvalidQQDDMApiResponseException) and obj.response_code == code:
+            return obj
+    return InvalidQQDDMApiResponseException

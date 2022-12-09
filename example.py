@@ -44,7 +44,7 @@ if __name__ == '__main__':
         exit(1)
     except InvalidQQDDMApiResponseException as ex:
         # If the API returned any other error, show the response body
-        print(f"API returned error; response body: {ex.response_body}")
+        print(f"API returned error ({ex}); response body: {ex.response_body}")
         exit(1)
 
     # noinspection PyUnboundLocalVariable

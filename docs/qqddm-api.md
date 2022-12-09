@@ -123,11 +123,11 @@ Example response body of a failed request:
 
 ### c.2.i. Identified errors
 
-| `code`  | `msg`                 | Description                                                                                         |
-|---------|-----------------------|-----------------------------------------------------------------------------------------------------|
-| `2114`  | `IMG_ILLEGAL`         | Not allowed picture (nude, violence, political...)                                                  |
-| `2111`  | `VOLUMN_LIMIT`        | Possibly rate limit or image too big (retrying may return successfuly after some retries)           |
-| `-2100` | `PARAM_INVALID`       | Possibly invalid file or image format (gif, webp and other uncommon formats seem to be unsupported) |
-| `-2111` | `AUTH_FAILED`         | Possibly invalid request body, missing parts on the request body or headers                         |
-| `2119`  | `user_ip_country 西班牙` | The API seems to be only available in China, so using a chinese proxy may be required               |
-| `1001`  | `b'no face in img'`   | The picture has no human faces in it, so the API does not allow its conversion                      |
+| `code`  | `msg`                                              | Description                                                                                         |
+|---------|----------------------------------------------------|-----------------------------------------------------------------------------------------------------|
+| `2114`  | `IMG_ILLEGAL`                                      | Not allowed picture (nude, violence, political...)                                                  |
+| `2111`  | `VOLUMN_LIMIT`                                     | Possibly rate limit or image too big (retrying may return successfuly after some retries)           |
+| `-2100` | `PARAM_INVALID`                                    | Possibly invalid file or image format (gif, webp and other uncommon formats seem to be unsupported) |
+| `-2111` | `AUTH_FAILED`                                      | Possibly invalid request body, missing parts on the request body or headers                         |
+| `2119`  | `user_ip_country <origin country name in chinese>` | The API seems to be only available in China, so using a chinese proxy may be required               |
+| `1001`  | `b'no face in img'`                                | The picture has no human faces in it, so the API does not allow its conversion                      |
