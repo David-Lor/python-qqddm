@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import List, Set, Optional
 
 import pydantic
 
@@ -15,11 +15,12 @@ class AIProcessorRequestBody(pydantic.BaseModel):
             level: int = 0
 
         version: int = 2
+        language: str = "en"
         platform: str = "web"
         face_rects: list = []
         data_report: DataReport = pydantic.Field(default_factory=DataReport)
 
-    busiId: str = "ai_painting_anime_entry"
+    busiId: str = "different_dimension_me_img_entry"
     images: List[str]
     extra: Optional[str] = None
 
@@ -27,8 +28,7 @@ class AIProcessorRequestBody(pydantic.BaseModel):
 class AIProcessorResponseBody(pydantic.BaseModel):
 
     class Extra(pydantic.BaseModel):
-        video_urls: List[pydantic.AnyHttpUrl]
-        img_urls: List[pydantic.AnyHttpUrl]
+        img_urls: Set[pydantic.AnyHttpUrl]
 
     code: int
     msg: str

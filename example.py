@@ -6,7 +6,6 @@ import httpx
 from qqddm import AnimeConverter, InvalidQQDDMApiResponseException, IllegalPictureQQDDMApiResponseException
 
 
-API_VERSION = os.getenv("API_VERSION", 2)
 PROXY = os.getenv("PROXY", None)
 USERAGENT = os.getenv("USERAGENT", "Mozilla/5.0 (X11; Linux x86_64; rv:106.0) Gecko/20100101 Firefox/106.0")
 
@@ -30,9 +29,8 @@ if __name__ == '__main__':
 
     # Initialize the AnimeConverter class. Optional settings can be used for customizing the requesting behaviour.
     converter = AnimeConverter(
-        generate_api_version=API_VERSION,
         global_useragents=[USERAGENT],
-        global_proxy=PROXY,
+        generate_proxy=PROXY,
     )
 
     # Result is returned as an `AnimeResult` object
@@ -58,7 +56,6 @@ if __name__ == '__main__':
     # Finally, save each returned picture.
     now_isoformat = datetime.datetime.now().isoformat()
     for i, pic in enumerate(pictures):
-        extension = "png" if i == 0 else "jpg"
-        filepath = f"qqddm_{now_isoformat}_{i}.{extension}"
+        filepath = f"qqddm_{now_isoformat}_{i}.jpg"
         with open(filepath, "wb") as f:
             f.write(pic)
