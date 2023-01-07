@@ -142,13 +142,13 @@ class AnimeConverter(BaseAnimeConverter):
 
         pictures = [None for _ in range(len(result.pictures_urls))]
         threads = [
-            # TODO Review this:
             threading.Thread(
-                target=self._download_one_work(
+                target=self._download_one_work,
+                kwargs=dict(
                     download_url=picture_url,
                     results_list=pictures,
                     results_list_index=i,
-                )
+                ),
             )
             for i, picture_url in enumerate(result.pictures_urls)
         ]
