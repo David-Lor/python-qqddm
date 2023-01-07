@@ -8,7 +8,6 @@ from typing import Optional, List
 import httpx
 import pydantic
 
-from .models.qqddm_api import AIProcessorRequestBody, AIProcessorResponseBody
 from .utils import choose
 from .models import qqddm_api
 from .models.exceptions import qqddm_api as qqddm_api_exceptions
@@ -29,7 +28,7 @@ class BaseAnimeConverter(pydantic.BaseModel):
 
     # Settings for Generate requests (send a picture and convert to an anime avatar)
     generate_request_url: pydantic.AnyHttpUrl = \
-        "https://ai.tu.qq.com/trpc.shadow_cv.ai_processor_cgi.AIProcessorCgi/Process"
+        "https://ai.tu.qq.com/overseas/trpc.shadow_cv.ai_processor_cgi.AIProcessorCgi/Process"
     generate_request_timeout_seconds: float = 30
     generate_proxy: Optional[str] = None
     generate_api_version: Optional[int] = None
@@ -45,9 +44,9 @@ class BaseAnimeConverter(pydantic.BaseModel):
 
     def _get_request_body(self, picture: bytes):
         picture_b64 = base64.b64encode(picture).decode()
-        extra = qqddm_api.AIProcessorRequestBody.Extra(
-            version=self.generate_api_version,
-        )
+        extra = qqddm_api.AIProcessorRequestBody.Extra()
+        if self.generate_api_version is not None:
+            extra.version = self.generate_api_version
 
         return qqddm_api.AIProcessorRequestBody(
             images=[picture_b64],
@@ -62,15 +61,10 @@ class BaseAnimeConverter(pydantic.BaseModel):
         return headers
 
     @staticmethod
-    def _get_sign_headers(body: AIProcessorRequestBody) -> dict:
+    def _get_sign_headers(body_json: str) -> dict:
         # Based on: https://github.com/lmcsu/qq-neural-anime-tg/blob/main/index.ts
         #           (signV1(...) method)
-        body_str = body.json()
-        value = (
-            'https://h5.tu.qq.com' +
-            str(len(body_str)) +
-            'HQ31X02e'
-        )
+        value = f"https://h5.tu.qq.com{len(body_json)}HQ31X02e"
         value = hashlib.md5(value.encode()).hexdigest()
 
         return {
@@ -81,7 +75,7 @@ class BaseAnimeConverter(pydantic.BaseModel):
         }
 
     @staticmethod
-    def _raise_exception_from_response(response_raw: httpx.Response, response_parsed: AIProcessorResponseBody):
+    def _raise_exception_from_response(response_raw: httpx.Response, response_parsed: qqddm_api.AIProcessorResponseBody):
         if response_parsed.valid:
             return
 
@@ -105,9 +99,11 @@ class AnimeConverter(BaseAnimeConverter):
         """
 
         request_body = self._get_request_body(picture=picture)
+        request_body_json = request_body.json(exclude_none=True)
         headers = {
-            **self._get_sign_headers(request_body),
+            **self._get_sign_headers(request_body_json),
             **self._get_useragent_headers(choose(self.global_useragents, self.generate_useragents)),
+            "Content-Type": "application/json",
         }
 
         time_start = time.time()
@@ -117,7 +113,7 @@ class AnimeConverter(BaseAnimeConverter):
             headers=headers,
             method="POST",
             url=str(self.generate_request_url),
-            json=request_body.dict(exclude_none=True),
+            content=request_body_json,
         )
         r.raise_for_status()
 
@@ -146,6 +142,7 @@ class AnimeConverter(BaseAnimeConverter):
 
         pictures = [None for _ in range(len(result.pictures_urls))]
         threads = [
+            # TODO Review this:
             threading.Thread(
                 target=self._download_one_work(
                     download_url=picture_url,
