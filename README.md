@@ -16,7 +16,6 @@ Check the [example](example.py) code.
 
 ### Known issues and limitations of the API
 
-- **Only available from China**: since 2022-12-06, the QQ's API requires requests being performed from China, thus using a chinese proxy is required (you can see some public free servers [here](http://free-proxy.cz/en/proxylist/country/CN/socks5/ping/all), or use [proxybroker2](https://github.com/bluet/proxybroker2)).
 - **Only pictures with human faces**: since 2022-12-06, the QQ's API became stricter with the pictures being converted, and requires them to have a human face.
 - **Forbidden images**: the QQ's API refuses to convert images with sensible or political content.
 
@@ -24,6 +23,9 @@ Check the [example](example.py) code.
 
 Versions 0.y.z are expected to be unstable, and the library API may change on Minor (y) releases.
 
+- 0.1.1
+  - Update to the new "overseas" API, which can be used from outside China
+  - Fix how images are downloaded using threads
 - 0.0.3
   - Add new custom exception `ParamInvalidQQDDMApiResponseException`
   - Refactor mapping of API response codes with custom exceptions, now done programatically, defining the corresponding response code on each exception class
